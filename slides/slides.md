@@ -1,26 +1,36 @@
 # genomizer-admin
 
 * Easy deployment and backup of the Genomizer server and web UI.
-    * Implemented using Docker.
-    * Like a virtual machine, but more light-weight.
-    * Hides the complexities of Docker.
+    * Implemented using Docker containers.
+    * Like a virtual machine, but runs natively.
+    * Therefore faster and more lightweight.
+    * Actually, three virtual machines linked together.
+    * One for the database, one for the server, one for proxy.
+    * `genomizer-admin` hides all that complexity from you.
 
 # Deployment
 
 * Just do this:
 
     ~~~ {.shell}
-    $ ssh my_server
+    $ ssh genomizer
     $ URL="https://github.com/genomizer/genomizer-docker/archive/master.tar.gz"
     $ wget -o genomizer-docker.tar.gz $URL
-    $ tar xf genomizer-docker.tar.gz
+    $ tar xzf genomizer-docker.tar.gz
     $ cd genomizer-docker
     $ ./genomizer-docker deploy
     ~~~
 * This will download the latest release from GitHub.
 
-* If some required software is missing, it will ask you to run `genomizer-admin
-  install-prereqs`.
+* Binaries and documentation are now built automatically by our continuous
+  integration system.
+
+    * Check out [`github.com/genomizer/genomizer-downloads`](http://github.com/genomizer/genomizer-downloads).
+
+* If some required software is missing, `genomizer-admin` will ask you to run
+  `genomizer-admin install-prereqs`.
+
+    * Installs Docker and other software for you.
 
 # Customisation
 
@@ -42,30 +52,37 @@
     --ram RAM             RAM limit
     ~~~
 
+* Several default configurations supported (`production`, `dev1`, `dev2`, ...).
+
 # Backup
 
-* Also easy:
+* Simply stop the server and copy the `Data/production-data` directory:
 
     ~~~ {.shell}
-    $ ./genomizer-admin backup -o backup_dir
+    $ ./genomizer-admin stop
+    $ tar czf backup.tar.gz /Data/production-data
+    $ ./genomizer-admin start
     ~~~
-
-* To restore from backup:
-
-    ~~~ {.shell}
-    $ ./genomizer-admin deploy -r backup_dir
-    ~~~
-* Right now only backs up the database.
-
-* To find out where data files are located, run `genomizer-admin info`.
+* There is also a WIP `backup` command that does online backup, but it needs
+  more testing.
 
 # Other commands, p. 1
 
 * `genomizer-admin info`
 
+    * Information about how the server is configured.
+
     ~~~ {.shell}
     $ ./genomizer-admin info
-    TODO
+    RAM Limit:   -1 (unlimited)
+    CPU Limit:   -1 (unlimited)
+    Server Port: 7000
+    HTTP Port:   80
+    HTTPS Port:  443
+    Temp dir:    /Data/production-data
+    Data dir:    /Data/tmp
+    PGDATA dir:  /Data/tmp/pgdata
+    Cert dir:    /home/designer/genomizer-docker/production/cert
     ~~~
 * `genomizer-admin [stop|start|restart]`
 
@@ -97,14 +114,18 @@
 
     * Again, container can be selected with `-c`.
 
-# Documentation
+    * Useful for debugging.
+
+# Getting help
 
 * Just run `genomizer-admin help`
 
     ~~~ {.shell}
     $ ./genomizer-admin help
+    [...]
     subcommands:
-  {install-prereqs,deploy,info,stop,start,restart,backup,destroy,shell,logs,debug,help}
+  {install-prereqs,deploy,info,stop,start,restart,backup
+  ,destroy,shell,logs,debug,help}
     install-prereqs     Install software required for this script to work
     deploy              Deploy the given server configuration
     info                Print information about deployed server instances
@@ -119,7 +140,17 @@
     help                Show the help message for the given command
 
     ~~~
+* If you find a bug, [file an issue on GitHub against the genomizer-docker repo](https://github.com/genomizer/genomizer-docker/issues/new).
 
 # Live demonstration (if needed)
 
-* A test system is running on [`https://130.239.192.78`](https://130.239.192.78)
+* A test system is running on [`genomizer2`](https://130.239.192.78).
+
+* These slides are available online on [genomizer.github.io](http://genomizer.github.io).
+
+* Future work:
+
+    * Online backup.
+    * Update the PDF manual (which still talks about Vagrant).
+    * [Letsencrypt](https://letsencrypt.org/) integration.
+        * Get rid of warnings about unsigned certificates.

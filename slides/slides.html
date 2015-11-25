@@ -16,9 +16,12 @@
 <ul>
 <li>Easy deployment and backup of the Genomizer server and web UI.
 <ul>
-<li>Implemented using Docker.</li>
-<li>Like a virtual machine, but more light-weight.</li>
-<li>Hides the complexities of Docker.</li>
+<li>Implemented using Docker containers.</li>
+<li>Like a virtual machine, but runs natively.</li>
+<li>Therefore faster and more lightweight.</li>
+<li>Actually, three virtual machines linked together.</li>
+<li>One for the database, one for the server, one for proxy.</li>
+<li><code>genomizer-admin</code> hides all that complexity from you.</li>
 </ul></li>
 </ul>
 </div>
@@ -26,14 +29,21 @@
 <h1>Deployment</h1>
 <ul>
 <li><p>Just do this:</p>
-<pre class="shell"><code>$ ssh my_server
+<pre class="shell"><code>$ ssh genomizer
 $ URL=&quot;https://github.com/genomizer/genomizer-docker/archive/master.tar.gz&quot;
 $ wget -o genomizer-docker.tar.gz $URL
-$ tar xf genomizer-docker.tar.gz
+$ tar xzf genomizer-docker.tar.gz
 $ cd genomizer-docker
 $ ./genomizer-docker deploy</code></pre></li>
 <li><p>This will download the latest release from GitHub.</p></li>
-<li><p>If some required software is missing, it will ask you to run <code>genomizer-admin   install-prereqs</code>.</p></li>
+<li><p>Binaries and documentation are now built automatically by our continuous integration system.</p>
+<ul>
+<li>Check out <a href="http://github.com/genomizer/genomizer-downloads"><code>github.com/genomizer/genomizer-downloads</code></a>.</li>
+</ul></li>
+<li><p>If some required software is missing, <code>genomizer-admin</code> will ask you to run <code>genomizer-admin install-prereqs</code>.</p>
+<ul>
+<li>Installs Docker and other software for you.</li>
+</ul></li>
 </ul>
 </div>
 <div id="customisation" class="slide section level1">
@@ -53,25 +63,36 @@ optional arguments:
 -c CERT, --cert CERT  path to the certs directory
 --cpu CPU             CPU limit
 --ram RAM             RAM limit</code></pre></li>
+<li><p>Several default configurations supported (<code>production</code>, <code>dev1</code>, <code>dev2</code>, ...).</p></li>
 </ul>
 </div>
 <div id="backup" class="slide section level1">
 <h1>Backup</h1>
 <ul>
-<li><p>Also easy:</p>
-<pre class="shell"><code>$ ./genomizer-admin backup -o backup_dir</code></pre></li>
-<li><p>To restore from backup:</p>
-<pre class="shell"><code>$ ./genomizer-admin deploy --restore backup_dir</code></pre></li>
-<li><p>Right now only backs up the database.</p></li>
-<li><p>To find out where data files are located, run <code>genomizer-admin info</code>.</p></li>
+<li><p>Simply stop the server and copy the <code>Data/production-data</code> directory:</p>
+<pre class="shell"><code>$ ./genomizer-admin stop
+$ tar czf backup.tar.gz /Data/production-data
+$ ./genomizer-admin start</code></pre></li>
+<li><p>There is also a WIP <code>backup</code> command that does online backup, but it needs more testing.</p></li>
 </ul>
 </div>
 <div id="other-commands-p.-1" class="slide section level1">
 <h1>Other commands, p. 1</h1>
 <ul>
 <li><p><code>genomizer-admin info</code></p>
+<ul>
+<li>Information about how the server is configured.</li>
+</ul>
 <pre class="shell"><code>$ ./genomizer-admin info
-TODO</code></pre></li>
+RAM Limit:   -1 (unlimited)
+CPU Limit:   -1 (unlimited)
+Server Port: 7000
+HTTP Port:   80
+HTTPS Port:  443
+Temp dir:    /Data/production-data
+Data dir:    /Data/tmp
+PGDATA dir:  /Data/tmp/pgdata
+Cert dir:    /home/designer/genomizer-docker/production/cert</code></pre></li>
 <li><p><code>genomizer-admin [stop|start|restart]</code></p>
 <ul>
 <li>Stop/start/restart the server.</li>
@@ -100,16 +121,19 @@ $ ./genomizer-admin shell -c nginx
 <ul>
 <li><p>Show logs of a running server instance.</p></li>
 <li><p>Again, container can be selected with <code>-c</code>.</p></li>
+<li><p>Useful for debugging.</p></li>
 </ul></li>
 </ul>
 </div>
-<div id="documentation" class="slide section level1">
-<h1>Documentation</h1>
+<div id="getting-help" class="slide section level1">
+<h1>Getting help</h1>
 <ul>
 <li><p>Just run <code>genomizer-admin help</code></p>
 <pre class="shell"><code>$ ./genomizer-admin help
+[...]
 subcommands:
-  {install-prereqs,deploy,info,stop,start,restart,backup,destroy,shell,logs,debug,help}
+  {install-prereqs,deploy,info,stop,start,restart,backup
+  ,destroy,shell,logs,debug,help}
 install-prereqs     Install software required for this script to work
 deploy              Deploy the given server configuration
 info                Print information about deployed server instances
@@ -123,12 +147,23 @@ logs                Show logs from a running server instance
 debug               Run a debugging shell (advanced)
 help                Show the help message for the given command
 </code></pre></li>
+<li><p>If you find a bug, <a href="https://github.com/genomizer/genomizer-docker/issues/new">file an issue on GitHub against the genomizer-docker repo</a>.</p></li>
 </ul>
 </div>
 <div id="live-demonstration-if-needed" class="slide section level1">
 <h1>Live demonstration (if needed)</h1>
 <ul>
-<li>A test system is running on <a href="https://130.239.192.78"><code>https://130.239.192.78</code></a></li>
+<li><p>A test system is running on <a href="https://130.239.192.78"><code>genomizer2</code></a>.</p></li>
+<li><p>These slides are available online on <a href="http://genomizer.github.io">genomizer.github.io</a>.</p></li>
+<li><p>Future work:</p>
+<ul>
+<li>Online backup.</li>
+<li>Update the PDF manual (which still talks about Vagrant).</li>
+<li><a href="https://letsencrypt.org/">Letsencrypt</a> integration.
+<ul>
+<li>Get rid of warnings about unsigned certificates.</li>
+</ul></li>
+</ul></li>
 </ul>
 </div>
 </body>
